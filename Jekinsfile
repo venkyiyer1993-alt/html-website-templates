@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pull code from Git repository
+                git branch: 'main', url: 'https://github.com/your-username/gym-website.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t gym-website .'
+                }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                script {
+                    // Stop old container if running
+                    sh 'docker rm -f gym-container || true'
+                    // Run new container
+                    sh 'docker run -d --name gym-container -p 8080:80 gym-website'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Gym website deployed successfully!'
+        }
+        failure {
+            echo '❌ Build or deployment failed.'
+        }
+    }
+}
